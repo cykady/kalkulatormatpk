@@ -1,0 +1,8 @@
+import streamlit as st
+
+st.set_page_config(page_title="Narzędzia Inżynierskie", layout="centered")
+
+st.title("Witaj w Kalkulatorze Inżynierskim! 🛠️")
+st.markdown("---")
+st.write("Wybierz odpowiedni moduł matematyczny z menu po lewej stronie.")
+st.info("Każda zakładka to teraz osobny, niezależny plik. Możesz je edytować bez ryzyka zepsucia reszty aplikacji!")

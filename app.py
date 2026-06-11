@@ -1,5 +1,5 @@
 import streamlit as st
-
+#python -m streamlit run app.py
 st.set_page_config(page_title="Narzędzia Inżynierskie", layout="centered")
 
 st.title("Witaj w Kalkulatorze Inżynierskim! 🛠️")

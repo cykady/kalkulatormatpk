@@ -21,10 +21,10 @@ tab1, tab2, tab3 = st.tabs([
 ])
 
 # ==========================================
-# TAB 1: Postać y'' = f(x) (Podwójne całkowanie krok po kroku z rozpisaniem algebry)
+# TAB 1: Postać y'' = f(x) (Format z zajęć + Algebra na piechotę)
 # ==========================================
 with tab1:
-    st.subheader("Podwójne całkowanie z pełnym opisem etapów i obliczeń (Zadania nr 1):")
+    st.subheader("Podwójne całkowanie (Format z zajęć + obliczenia na piechotę):")
     
     zadania = {
         "Zadanie 1.1: y'' = 12x^2 | y(1)=2, y'(1)=4": {"f": "12*x**2", "c1_t": "y", "c1_x": "1", "c1_v": "2", "c2_t": "y'", "c2_x": "1", "c2_v": "4"},
@@ -42,7 +42,7 @@ with tab1:
     wybor = st.selectbox("Wybierz zadanie z listy lub opcję własną:", list(zadania.keys()), key="sel_tab1")
     data = zadania[wybor]
     
-    if data["f"] == "WLASNY":
+    if wybor == "✨ Własny przykład...":
         f_str = st.text_input("Prawa strona równania y'' = f(x):", "12*x**2")
         st.markdown("**Warunek 1:**")
         col1, col2, col3 = st.columns([1, 2, 2])
@@ -61,7 +61,7 @@ with tab1:
         c2_t, c2_x, c2_v = data["c2_t"], data["c2_x"], data["c2_v"]
         st.code(f"y'' = {f_str}  |  {c1_t}({c1_x}) = {c1_v}  |  {c2_t}({c2_x}) = {c2_v}")
 
-    if st.button("📝 Generuj szczegółowy protokół kolokwialny (Tab 1)", type="primary", key="btn_tab1"):
+    if st.button("📝 Generuj procedurę krok po kroku", type="primary", key="btn_tab1"):
         try:
             f_x = parse_expr(f_str.replace('^', '**'), transformations=transformations)
             x0_1 = parse_expr(c1_x.replace('^', '**'), transformations=transformations)
@@ -70,155 +70,109 @@ with tab1:
             v0_2 = parse_expr(c2_v.replace('^', '**'), transformations=transformations)
             
             st.markdown("---")
-            st.markdown("## 📝 Szczegółowy Protokół Rozwiązania")
+            st.markdown("### Rozwiązanie:")
             
-            # ==========================================
-            # WSTĘP
-            # ==========================================
-            st.markdown("### 🔹 Wstęp")
-            st.markdown("Rozpatrujemy równanie różniczkowe zwyczajne rzędu drugiego, w którym druga pochodna poszukiwanej funkcji jest bezpośrednią funkcją zmiennej niezależnej $x$. Zapisujemy równanie w postaci wyjściowej:")
+            # Zapis równania wyjściowego
             st.latex(rf"y^{{\prime\prime}} = {sp.latex(f_x)}")
             
-            st.markdown("Zadanie obwarowane jest dwoma warunkami granicznymi, które pozwolą na jednoznaczne wyznaczenie stałych całkowania w dalszej części protokołu:")
-            st.latex(rf"\begin{{cases}} {c1_t}({sp.latex(x0_1)}) = {sp.latex(v0_1)} \\ {c2_t}({sp.latex(x0_2)}) = {sp.latex(v0_2)} \end{{cases}}")
-            
-            # ==========================================
-            # ETAP 1
-            # ==========================================
-            st.markdown("### 🔹 ETAP 1: Pierwsze całkowanie (wyznaczenie równania pierwszej pochodnej)")
-            st.markdown("Ponieważ druga pochodna to z definicji pochodna z pierwszej pochodnej, czyli $\\frac{d(y')}{dx}$, możemy obniżyć rząd równania poprzez obustronne nałożenie całki nieoznaczonej względem zmiennej $x$:")
+            # KROK 1: Pierwsze całkowanie
+            st.markdown("**Krok 1: Pierwsze całkowanie obustronne (obniżenie rzędu)**")
             st.latex(rf"y^{{\prime}}(x) = \int y^{{\prime\prime}} \, dx = \int \left({sp.latex(f_x)}\right) dx")
             
             y_prime_int = sp.integrate(f_x, x)
             y_prime = y_prime_int + C1
             y_prime_latex = sp.latex(y_prime).replace(r"\log", r"\ln")
-            
-            st.markdown("Po obliczeniu całki z funkcji składowej dopisujemy pierwszą niezależną stałą całkowania $C_1$. Otrzymujemy jawną postać równania pierwszej pochodnej:")
             st.latex(rf"y^{{\prime}}(x) = {y_prime_latex}")
             
-            # ==========================================
-            # ETAP 2
-            # ==========================================
-            st.markdown("### 🔹 ETAP 2: Drugie całkowanie oraz wyznaczenie stałych strukturalnych")
-            st.markdown("Aby przejść od równania pierwszej pochodnej $y'(x) = \\frac{dy}{dx}$ do czystej funkcji $y(x)$, ponownie nakładamy obustronnie całkę nieoznaczoną względem zmiennej $x$:")
+            # KROK 2: Drugie całkowanie (COR)
+            st.markdown("**Krok 2: Drugie całkowanie obustronne (wyznaczenie COR)**")
             st.latex(rf"y(x) = \int y^{{\prime}}(x) \, dx = \int \left({y_prime_latex}\right) dx")
             
             y_int = sp.integrate(y_prime_int, x)
             y_gen = y_int + C1*x + C2
             y_gen_latex = sp.latex(y_gen).replace(r"\log", r"\ln")
             
-            st.markdown("Wykonując całkowanie wyraz po wyrazie i wprowadzając drugą niezależną stałą całkowania $C_2$, uzyskujemy pełną postać Całki Ogólnej Równania (COR):")
-            st.latex(rf"y(x) = {y_gen_latex}")
+            st.markdown("**czyli**")
+            st.latex(rf"\underline{{y_0 = {y_gen_latex} \quad \text{{- COR}}}}")
+            st.markdown("---")
             
-            st.markdown("W celu wyznaczenia konkretnych wartości stałych $C_1$ i $C_2$, podstawiamy dane z warunków granicznych do otrzymanych struktur na $y(x)$ oraz $y'(x)$:")
-            
+            # KROK 3: Układ równań
+            st.markdown("**Krok 3: Układamy układ równań z warunków granicznych:**")
             eqs = []
             eq_latex = []
             
             if c1_t == "y":
-                val_sub = y_gen.subs(x, x0_1)
-                eqs.append(sp.Eq(val_sub, v0_1))
-                eq_latex.append(rf"{sp.latex(v0_1)} = {sp.latex(val_sub)}")
+                val_sub1 = sp.simplify(y_gen.subs(x, x0_1))
             else:
-                val_sub = y_prime.subs(x, x0_1)
-                eqs.append(sp.Eq(val_sub, v0_1))
-                eq_latex.append(rf"{sp.latex(v0_1)} = {sp.latex(val_sub)}")
+                val_sub1 = sp.simplify(y_prime.subs(x, x0_1))
+            eqs.append(sp.Eq(val_sub1, v0_1))
+            eq_latex.append(rf"{sp.latex(v0_1)} = {sp.latex(val_sub1)}")
                 
             if c2_t == "y":
-                val_sub = y_gen.subs(x, x0_2)
-                eqs.append(sp.Eq(val_sub, v0_2))
-                eq_latex.append(rf"{sp.latex(v0_2)} = {sp.latex(val_sub)}")
+                val_sub2 = sp.simplify(y_gen.subs(x, x0_2))
             else:
-                val_sub = y_prime.subs(x, x0_2)
-                eqs.append(sp.Eq(val_sub, v0_2))
-                eq_latex.append(rf"{sp.latex(v0_2)} = {sp.latex(val_sub)}")
+                val_sub2 = sp.simplify(y_prime.subs(x, x0_2))
+            eqs.append(sp.Eq(val_sub2, v0_2))
+            eq_latex.append(rf"{sp.latex(v0_2)} = {sp.latex(val_sub2)}")
             
-            st.markdown("Konstruujemy układ dwóch równań liniowych z dwiema niewiadomymi:")
             st.latex(rf"\begin{{cases}} {eq_latex[0]} \\ {eq_latex[1]} \end{{cases}}")
             
-            # --- ROZPISANIE OBLICZEŃ UKŁADU KROK PO KROKU ---
+            # KROK 4: Algebra na piechotę
             solutions = sp.solve(eqs, (C1, C2))
             
             if solutions:
-                c1_val = solutions[C1]
-                c2_val = solutions[C2]
+                c1_val = sp.simplify(solutions[C1])
+                c2_val = sp.simplify(solutions[C2])
                 
-                st.markdown("#### 🧮 Obliczenia algebraiczne stałych (Krok po kroku):")
+                st.markdown("#### 🧮 Obliczenia algebraiczne układu na piechotę:")
                 
-                # Definiujemy zmienne pomocnicze do wykrycia struktury układu
-                eq_y_prime = None
-                v_y_prime = None
-                x_y_prime = None
-                eq_y = None
-                v_y = None
-                x_y = None
+                has_c1_eq1 = val_sub1.has(C1)
+                has_c2_eq1 = val_sub1.has(C2)
                 
-                if c1_t == "y'":
-                    eq_y_prime = y_prime.subs(x, x0_1)
-                    v_y_prime = v0_1
-                    x_y_prime = x0_1
-                    eq_y = y_gen.subs(x, x0_2)
-                    v_y = v0_2
-                    x_y = x0_2
-                elif c2_t == "y'":
-                    eq_y_prime = y_prime.subs(x, x0_2)
-                    v_y_prime = v0_2
-                    x_y_prime = x0_2
-                    eq_y = y_gen.subs(x, x0_1)
-                    v_y = v0_1
-                    x_y = x0_1
-                
-                if eq_y_prime is not None:
-                    # PRZYPADEK CAUCHY'EGO: Jedno z równań ma tylko C1 (pochodzi z pochodnej)
-                    st.markdown(f"1. Wybieramy równanie wynikające z warunku dla pierwszej pochodnej ${c1_t if c1_t == 'y' else c2_t}({sp.latex(x_y_prime)}) = {sp.latex(v_y_prime)}$, ponieważ zawiera ono wyłącznie jedną niewiadomą ($C_1$):")
-                    st.latex(rf"{sp.latex(v_y_prime)} = {sp.latex(eq_y_prime)}")
+                # Przypadek 1: Pierwsze równanie ma tylko C1 (Typowo: pochodna ma tylko C1)
+                if has_c1_eq1 and not has_c2_eq1:
+                    c1_iso = sp.solve(sp.Eq(val_sub1, v0_1), C1)[0]
+                    st.markdown("Z pierwszego równania wyznaczamy bezpośrednio stałą $C_1$:")
+                    st.latex(rf"C_1 = {sp.latex(c1_iso)}")
+                    st.markdown("Podstawiamy obliczoną wartość $C_1$ do drugiego równania strukturalnego:")
+                    eq2_sub = sp.simplify(val_sub2.subs(C1, c1_iso))
+                    st.latex(rf"{sp.latex(v0_2)} = {sp.latex(eq2_sub)} \implies C_2 = {sp.latex(c2_val)}")
                     
-                    rest_c1 = sp.simplify(eq_y_prime - C1)
-                    st.markdown("Przenosimy znaną wartość całki na lewą stronę, aby wyizolować stałą $C_1$:")
-                    st.latex(rf"C_1 = {sp.latex(v_y_prime)} - \left({sp.latex(rest_c1)}\right)")
-                    st.latex(rf"C_1 = {sp.latex(c1_val)}")
+                # Przypadek 2: Pierwsze równanie ma tylko C2 (Rzadko, np. x=0 zeruje C1)
+                elif has_c2_eq1 and not has_c1_eq1:
+                    c2_iso = sp.solve(sp.Eq(val_sub1, v0_1), C2)[0]
+                    st.markdown("Z pierwszego równania wyznaczamy bezpośrednio stałą $C_2$:")
+                    st.latex(rf"C_2 = {sp.latex(c2_iso)}")
+                    st.markdown("Podstawiamy obliczoną wartość $C_2$ do drugiego równania strukturalnego:")
+                    eq2_sub = sp.simplify(val_sub2.subs(C2, c2_iso))
+                    st.latex(rf"{sp.latex(v0_2)} = {sp.latex(eq2_sub)} \implies C_1 = {sp.latex(c1_val)}")
                     
-                    st.markdown(f"2. Podstawiamy obliczoną wartość $C_1 = {sp.latex(c1_val)}$ oraz warunek dla funkcji głównej $y({sp.latex(x_y)}) = {sp.latex(v_y)}$ do drugiego równania układu:")
-                    eq_y_substituted = eq_y.subs(C1, c1_val)
-                    st.latex(rf"{sp.latex(v_y)} = {sp.latex(eq_y_substituted)}")
-                    
-                    rest_c2 = sp.simplify(eq_y_substituted - C2)
-                    st.markdown("Przerzucamy wszystkie stałe i ułamki na lewą stronę, izolując niewiadomą $C_2$:")
-                    st.latex(rf"C_2 = {sp.latex(v_y)} - \left({sp.latex(rest_c2)}\right)")
-                    st.latex(rf"C_2 = {sp.latex(c2_val)}")
-                
+                # Przypadek 3: Równania posiadają obie stałe C1 i C2 (Zagadnienie brzegowe)
                 else:
-                    # PRZYPADEK BRZEGOWY: Oba równania zawierają C1 i C2 (np. zadanie 1.5)
-                    eq1_full = y_gen.subs(x, x0_1)
-                    eq2_full = y_gen.subs(x, x0_2)
-                    
-                    st.markdown("1. Wyznaczamy stałą $C_2$ z pierwszego równania (przenosząc resztę składników na lewą stronę):")
-                    rest_eq1 = sp.simplify(eq1_full - C2)
-                    c2_isolated = v0_1 - rest_eq1
-                    st.latex(rf"C_2 = {sp.latex(c2_isolated)}")
-                    
-                    st.markdown("2. Podstawiamy wyznaczone wyrażenie na $C_2$ do drugiego równania strukturalnego układu:")
-                    eq2_substituted = eq2_full.subs(C2, c2_isolated)
-                    st.latex(rf"{sp.latex(v0_2)} = {sp.latex(eq2_substituted)}")
-                    
-                    st.markdown("Rozwiązujemy powstałe równanie z jedną niewiadomą, redukując ułamki w celu wyznaczenia $C_1$:")
+                    st.markdown("Metodą podstawiania wyznaczamy zależność dla stałej $C_2$ z pierwszego równania:")
+                    c2_iso = sp.solve(sp.Eq(val_sub1, v0_1), C2)[0]
+                    st.latex(rf"C_2 = {sp.latex(c2_iso)}")
+                    st.markdown("Wstawiamy wyznaczone wyrażenie do drugiego równania w celu redukcji do jednej niewiadomej ($C_1$):")
+                    eq2_sub = sp.simplify(val_sub2.subs(C2, c2_iso))
+                    st.latex(rf"{sp.latex(v0_2)} = {sp.latex(eq2_sub)}")
+                    st.markdown("Wyliczamy ostateczną wartość liczbową dla $C_1$:")
                     st.latex(rf"C_1 = {sp.latex(c1_val)}")
-                    
-                    st.markdown(f"3. Wracamy do podstawienia i obliczamy ostateczną wartość liczbową stałej $C_2$ dla $C_1 = {sp.latex(c1_val)}$:")
-                    c2_final_calc = c2_isolated.subs(C1, c1_val)
-                    st.latex(rf"C_2 = {sp.latex(c2_final_calc)} = {sp.latex(c2_val)}")
-                
+                    st.markdown("Wracamy do pierwszego podstawienia, aby domknąć obliczenia dla stałej $C_2$:")
+                    c2_final = sp.simplify(c2_iso.subs(C1, c1_val))
+                    st.latex(rf"C_2 = {sp.latex(c2_final)} = {sp.latex(c2_val)}")
+
                 st.markdown("---")
-                st.markdown("Podstawiamy uzyskane wartości $C_1$ i $C_2$ do wzoru ogólnego z początku Etapu 2. Redukcja ta sprowadza wynik do ostatecznej postaci Całki Szczególnej Równania (CSR):")
-                
-                y_final = y_gen.subs({C1: c1_val, C2: c2_val})
+                # KROK 5: Podkreślony wynik końcowy
+                st.markdown("**Ostateczna Całka Szczególna Równania (CSR):**")
+                y_final = sp.simplify(y_gen.subs({C1: c1_val, C2: c2_val}))
                 y_final_latex = sp.latex(y_final).replace(r"\log", r"\ln")
-                st.latex(rf"\text{{CSR:}} \quad y(x) = {y_final_latex}")
-                st.success("✔ Pełny proces wyznaczania całki szczególnej (wraz z algebrą) gotowy do przepisania!")
+                st.latex(rf"\underline{{y(x) = {y_final_latex} \quad \text{{- CSR}}}}")
+                st.success("✔ Całe zagadnienie dwukrotnego całkowania rozpisane w wymaganym formacie!")
             else:
                 st.warning("Układ równań dla podanych warunków granicznych jest sprzeczny.")
+                
         except Exception as e:
-            st.error(f"Wystąpił błąd podczas analizy symbolicznej: {e}")
+            st.error(f"Wystąpił błąd podczas obliczeń: {e}")
 
 # ==========================================
 # TAB 2: Równanie charakterystyczne (Format z notatek - układ bazowy i CORLJ)

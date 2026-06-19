@@ -673,6 +673,7 @@ with tab6:
                 
                 d_val = float(delta)
                 y_0 = 0
+                C1, C2 = sp.symbols('C1 C2')
                 if d_val > 0:
                     r1 = sp.simplify((-b - sp.sqrt(delta))/(2*a))
                     r2 = sp.simplify((-b + sp.sqrt(delta))/(2*a))
@@ -746,6 +747,7 @@ with tab6:
                     lines.append(r"\text{Ponieważ } f(x) = 0\text{, pomijamy etap II (równanie jednorodne).}")
                     lines.append(rf"\underline{{y(x) = {sp.latex(final_y)} \quad \text{{- CORLJ}}}}")
                     
+                # POPRAWIONY ETAP III (Bezwzględny brak skrótów myślowych)
                 if conds:
                     lines.append(r"")
                     lines.append(r"\underline{\textbf{etap III}} \quad \text{Zagadnienie Początkowe (Z.P.)}")
@@ -756,12 +758,40 @@ with tab6:
                         else: cases_str += rf"y^{{\prime}}({sp.latex(c_d['x_val'])}) = {sp.latex(c_d['y_val'])} \\ "
                     lines.append(rf"\text{{Z.P.}} \quad \begin{{cases}} {cases_str} \end{{cases}}")
                     
+                    lines.append(r"")
+                    lines.append(r"\text{Podstawiamy warunki brzegowe (krok po kroku):}")
                     sys_eqs = []
+                    
                     for c_d in conds:
-                        if c_d['type'] == 'y': sys_eqs.append(sp.Eq(sp.simplify(final_y.subs(x, c_d['x_val'])), c_d['y_val']))
-                        else: sys_eqs.append(sp.Eq(sp.simplify(y_prime_eq.subs(x, c_d['x_val'])), c_d['y_val']))
+                        x_val_latex = sp.latex(c_d['x_val'])
+                        y_val_latex = sp.latex(c_d['y_val'])
+                        
+                        # Tworzymy atrapę zmiennej x, żeby zablokować natychmiastowe obliczanie trygonometrii
+                        dummy_x = sp.Symbol(rf"\left({x_val_latex}\right)")
+                        
+                        if c_d['type'] == 'y':
+                            lines.append(rf"\text{{Dla }} x = {x_val_latex}, \quad y = {y_val_latex}:")
+                            # 1. Podstawienie "surowe" (tylko zamiana znaków)
+                            raw_subbed = final_y.subs(x, dummy_x)
+                            # 2. Pełne matematyczne wyliczenie (znikające zera itp.)
+                            eval_subbed = sp.simplify(final_y.subs(x, c_d['x_val']))
+                        else:
+                            lines.append(rf"\text{{Dla }} x = {x_val_latex}, \quad y' = {y_val_latex}:")
+                            raw_subbed = y_prime_eq.subs(x, dummy_x)
+                            eval_subbed = sp.simplify(y_prime_eq.subs(x, c_d['x_val']))
+                            
+                        # Drukujemy linię przed uproszczeniem
+                        lines.append(rf"{y_val_latex} = {sp.latex(raw_subbed)}")
+                        
+                        # Jeśli uproszczona wersja różni się od surowej, pokazujemy wynik uproszczenia z implikacją
+                        if sp.latex(raw_subbed) != sp.latex(eval_subbed):
+                            lines.append(rf"\implies {y_val_latex} = {sp.latex(eval_subbed)}")
+                            
+                        lines.append(r"") # Odstęp
+                        sys_eqs.append(sp.Eq(eval_subbed, c_d['y_val']))
                             
                     sols = sp.solve(sys_eqs, (C1, C2))
+                    
                     if sols:
                         if isinstance(sols, dict):
                             c1_ans, c2_ans = sols.get(C1, C1), sols.get(C2, C2)
@@ -770,6 +800,10 @@ with tab6:
                         lines.append(rf"C_1 = {sp.latex(c1_ans)} \quad , \quad C_2 = {sp.latex(c2_ans)}")
                         y_s_final = sp.simplify(final_y.subs({C1: c1_ans, C2: c2_ans}))
                         lines.append(rf"\text{{Odp:}} \quad \underline{{ y_s = {sp.latex(y_s_final)} \quad \text{{- CSR}} }}")
+                    else:
+                        lines.append(r"\textbf{Wniosek:} \text{ Otrzymano układ sprzeczny.}")
+                        lines.append(r"\text{Brak rozwiązania dla podanych warunków brzegowych.}")
+                        
                 st.latex("\\begin{aligned}\n" + " \\\\\n".join(lines) + "\n\\end{aligned}")
         except Exception as e:
             st.error(f"Błąd analizy równania. Szczegóły: {e}")
